@@ -4,159 +4,91 @@
   Hello all, my name is Abhinav Meduri. I am just learning the basics of coding, and I'm really starting to enjoy it. 
   Remember, I am just a beginner, so my website isn't the fancy one you're expecting it to be.
   <p>
-//////////////////////////////////////////////
-//////////////////////////////////////////////
-//CALL WILD POKEMON
-function wildPokemon (type) {
-this.type = type;
-}
-//POKEMON ARRAY
-var pokemonStats = new Array();
-pokemonStats[0] = new wildPokemon("Zubat");
-pokemonStats[1] = new wildPokemon("Oddish");
-pokemonStats[2] = new wildPokemon("Geodude");
-pokemonStats[3] = new wildPokemon("Slowpoke");
-//POKEMON ATTACK ARRAY
-function move (move, basedmg) {
-this.move = move;
-this.basedmg = basedmg;
-}
-var moves = new Array();
-moves[0] = new move("Slam", 5);
-moves[1] = new move("Headbutt", 4);
-moves[2] = new move("Tackle", 3);
-moves[3] = new move("Cut", 4);
-///////////////////////////////////////////////////
-//////////////////////////////////////////////////
-//CALL WILD POKEMON STATS
-//CALL WILD POKEMON ID
-var wildPokemonid;
-callWildPokemonid = function(){
-wildPokemonid = Math.floor(Math.random() * pokemonStats.length);
-};
-//CALL WILD POKEMON LEVEL
-var wildPokemonLevel;
-callWildPokemonLevel = function(){
-wildPokemonLevel = Math.floor(Math.random() * 6 + 1);
-};
-//CALL WILD POKEMON HEALTH  
-var wildPokemonHealth;
-callWildPokemonHealth = function(){
-wildPokemonHealth = Math.floor(Math.random() + wildPokemonLevel + 3);
-};
-//CALL WILD POKEMON ATTACK
-var moveid;
-callMoveid = function(){
-moveid = Math.floor(Math.random() * moves.length);
-};
-//CALL DAMAGE 
-var damage;
-//CALL WILD POKEMON ATTACK DAMAGE
-callMoveDamage = function(){
-damage = Math.floor(Math.random() * moves[callMoveid].basedmg + 3);
-};
-//CALL PLAYER ATTACK DAMAGE
-callPlayerMoveDamage = function() {
-damage = Math.floor(Math.random() * moves[playerMove].basedmg + 3);
-};
-//CALL PLAYER ATTACK
-function selectMove(){
-playerMove = prompt("You have 4 moves, " + moves[0].move + ", " + moves[1].move + ", " + moves[2].move + " and " + moves[3].move + ", which move do you want to use?").toUpperCase();
-if (playerMove === ""){
-selectMove();
-}
-else
-{
-switch(playerMove){
-case 'SLAM':
-playerMove = 0; 
-callPlayerMoveDamage();
-playerAttack();
-break;
-case 'HEADBUTT':
-playerMove = 1;
-callPlayerMoveDamage();
-playerAttack();
-break;
-case 'TACKLE':
-playerMove = 2;
-callPlayerMoveDamage();
-playerAttack();
-break;
-case 'CUT':
-playerMove = 3; 
-callPlayerMoveDamage();
-playerAttack();
-break;
-default : 
-alert('Move not found');
-selectMove();
-break;
-}
-}
-}
+(function() {
+  var SIZE = 500; // Size of the play-field in pixels
+  var GRID_SIZE = SIZE / 50;
+  var c = document.getElementById('c');
+  c.height = c.width = SIZE * 2; // 2x our resolution so retina screens look good
+  c.style.width = c.style.height = SIZE + 'px';
+  var context = c.getContext('2d');
+  context.scale(2, 2); // Scale our canvas for retina screens
 
-///////////////////////////////////////////////////
-//////////////////////////////////////////////////
-//WILD POKEMON ATTACK
-function wildPokemonAttack(){
-if (pokemonHealth > 0){
-pokemonHealth = pokemonHealth - damage;
-alert("Wild " + pokemonStats[wildPokemonid].type + " uses " + moves[moveid].move + " dealing " + damage + " damage!");
-attackLoop();}
-else
-{
-alert("Pokemon fainted");
-}
-}
-//PLAYER ATTACK
-function playerAttack(){
-alert ("Player uses " + moves[playerMove].move + " dealing " + damage + " damage!");
-if (wildPokemonHealth > 0) 
-{
-wildPokemonHealth = wildPokemonHealth - damage;
-alert(pokemonStats[wildPokemonid].type + " has " + wildPokemonHealth + " health remaining!");
-playerTurn = false;
-wildPokemonFaint()
-}
-else
-{
-alert(pokemonStats[wildPokemonid].type + " fainted");
-}
-}
-//RANDOMIZE WILD POKEMON
-function randomPokemon(){
-callWildPokemonid();
-callWildPokemonHealth();
-callWildPokemonLevel();
-callMoveid();
-}
-var pokemonHealth = 50;
-//START FIGHT
-function startFight(){
-randomPokemon();
-alert("Wild " + pokemonStats[wildPokemonid].type + " appears!");
-alert("Level : " + wildPokemonLevel + " Health : " + wildPokemonHealth);
-playerTurn = false;
-attackLoop();
-}
-function attackLoop(){
-if (playerTurn === false)
-{
-playerTurn = true;
-wildPokemonAttack();
-}
-else
-{
-playerTurn = false;
-selectMove();
-}
-}
-function wildPokemonFaint(){
-if (wildPokemonHealth < 1){
-alert(pokemonStats[wildPokemonid].type + " has fainted");}
-else
-{   attackLoop();}
-}
-startFight();
+  var direction = newDirection = 1; // -2: up, 2: down, -1: left, 1: right
+  var snakeLength = 5;
+  var snake = [{x: SIZE / 2, y: SIZE / 2}]; // Snake starts in the center
+  var candy = null;
+  var end = false;
+
+  function randomOffset() {
+    return Math.floor(Math.random() * SIZE / GRID_SIZE) * GRID_SIZE;
+  }
+
+  function stringifyCoord(obj) {
+    return [obj.x, obj.y].join(',');
+  }
+
+  function tick() {
+    var newHead = {x: snake[0].x, y: snake[0].y};
+
+    // Only change directon if the new direction is a different axis
+    if (Math.abs(direction) !== Math.abs(newDirection)) {
+      direction = newDirection;
+    }
+    var axis = Math.abs(direction) === 1 ? 'x' : 'y'; // 1, -1 are X; 2, -2 are Y
+    if (direction < 0) {
+      newHead[axis] -= GRID_SIZE; // Move left or down
+    } else {
+      newHead[axis] += GRID_SIZE; // Move right or up
+    }
+
+    // Did we eat a candy? Detect if our head is in the same cell as the candy
+    if (candy && candy.x === newHead.x && candy.y === newHead.y) {
+      candy = null;
+      snakeLength += 20;
+    }
+
+    context.fillStyle = '#002b36';
+    context.fillRect(0, 0, SIZE, SIZE); // Reset the play area
+    if (end) {
+      context.fillStyle = '#eee8d5';
+      context.font = '40px serif';
+      context.textAlign = 'center';
+      context.fillText('Refresh to play again', SIZE / 2, SIZE / 2);
+    } else {
+      snake.unshift(newHead); // Add the new head to the front
+      snake = snake.slice(0, snakeLength); // Enforce the snake's max length
+    }
+
+    // Detect wall collisions
+    if (newHead.x < 0 || newHead.x >= SIZE || newHead.y < 0 || newHead.y >= SIZE) {
+      end = true;
+    }
+
+    context.fillStyle = '#268bd2';
+    var snakeObj = {};
+    for (var i = 0; i < snake.length; i++) {
+      var a = snake[i];
+      context.fillRect(a.x, a.y, GRID_SIZE, GRID_SIZE); // Paint the snake
+      // Build a collision lookup object
+      if (i > 0) snakeObj[stringifyCoord(a)] = true;
+    }
+
+    if (snakeObj[stringifyCoord(newHead)]) end = true; // Collided with our tail
+
+    // Place a candy (not on the snake) if needed
+    while (!candy || snakeObj[stringifyCoord(candy)]) {
+      candy = {x: randomOffset(), y: randomOffset()};
+    }
+
+    context.fillStyle = '#b58900';
+    context.fillRect(candy.x, candy.y, GRID_SIZE, GRID_SIZE); // Paint the candy
+  }
+
+  window.onload = function() {
+    setInterval(tick, 100); // Kick off the game loop!
+    window.onkeydown = function(e) {
+      newDirection = {37: -1, 38: -2, 39: 1, 40: 2}[e.keyCode] || newDirection;
+    };
+  };
+})();
 
