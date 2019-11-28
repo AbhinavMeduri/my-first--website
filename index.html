@@ -4,121 +4,159 @@
   Hello all, my name is Abhinav Meduri. I am just learning the basics of coding, and I'm really starting to enjoy it. 
   Remember, I am just a beginner, so my website isn't the fancy one you're expecting it to be.
   <p>
-<!DOCTYPE html>
-<html>
-    <head>
-        <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet">
-    </head>
-    <body>
+//////////////////////////////////////////////
+//////////////////////////////////////////////
+//CALL WILD POKEMON
+function wildPokemon (type) {
+this.type = type;
+}
+//POKEMON ARRAY
+var pokemonStats = new Array();
+pokemonStats[0] = new wildPokemon("Zubat");
+pokemonStats[1] = new wildPokemon("Oddish");
+pokemonStats[2] = new wildPokemon("Geodude");
+pokemonStats[3] = new wildPokemon("Slowpoke");
+//POKEMON ATTACK ARRAY
+function move (move, basedmg) {
+this.move = move;
+this.basedmg = basedmg;
+}
+var moves = new Array();
+moves[0] = new move("Slam", 5);
+moves[1] = new move("Headbutt", 4);
+moves[2] = new move("Tackle", 3);
+moves[3] = new move("Cut", 4);
+///////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//CALL WILD POKEMON STATS
+//CALL WILD POKEMON ID
+var wildPokemonid;
+callWildPokemonid = function(){
+wildPokemonid = Math.floor(Math.random() * pokemonStats.length);
+};
+//CALL WILD POKEMON LEVEL
+var wildPokemonLevel;
+callWildPokemonLevel = function(){
+wildPokemonLevel = Math.floor(Math.random() * 6 + 1);
+};
+//CALL WILD POKEMON HEALTH  
+var wildPokemonHealth;
+callWildPokemonHealth = function(){
+wildPokemonHealth = Math.floor(Math.random() + wildPokemonLevel + 3);
+};
+//CALL WILD POKEMON ATTACK
+var moveid;
+callMoveid = function(){
+moveid = Math.floor(Math.random() * moves.length);
+};
+//CALL DAMAGE 
+var damage;
+//CALL WILD POKEMON ATTACK DAMAGE
+callMoveDamage = function(){
+damage = Math.floor(Math.random() * moves[callMoveid].basedmg + 3);
+};
+//CALL PLAYER ATTACK DAMAGE
+callPlayerMoveDamage = function() {
+damage = Math.floor(Math.random() * moves[playerMove].basedmg + 3);
+};
+//CALL PLAYER ATTACK
+function selectMove(){
+playerMove = prompt("You have 4 moves, " + moves[0].move + ", " + moves[1].move + ", " + moves[2].move + " and " + moves[3].move + ", which move do you want to use?").toUpperCase();
+if (playerMove === ""){
+selectMove();
+}
+else
+{
+switch(playerMove){
+case 'SLAM':
+playerMove = 0; 
+callPlayerMoveDamage();
+playerAttack();
+break;
+case 'HEADBUTT':
+playerMove = 1;
+callPlayerMoveDamage();
+playerAttack();
+break;
+case 'TACKLE':
+playerMove = 2;
+callPlayerMoveDamage();
+playerAttack();
+break;
+case 'CUT':
+playerMove = 3; 
+callPlayerMoveDamage();
+playerAttack();
+break;
+default : 
+alert('Move not found');
+selectMove();
+break;
+}
+}
+}
 
-        <canvas Style="border: black solid 1px" id="canvas"></canvas>
+///////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//WILD POKEMON ATTACK
+function wildPokemonAttack(){
+if (pokemonHealth > 0){
+pokemonHealth = pokemonHealth - damage;
+alert("Wild " + pokemonStats[wildPokemonid].type + " uses " + moves[moveid].move + " dealing " + damage + " damage!");
+attackLoop();}
+else
+{
+alert("Pokemon fainted");
+}
+}
+//PLAYER ATTACK
+function playerAttack(){
+alert ("Player uses " + moves[playerMove].move + " dealing " + damage + " damage!");
+if (wildPokemonHealth > 0) 
+{
+wildPokemonHealth = wildPokemonHealth - damage;
+alert(pokemonStats[wildPokemonid].type + " has " + wildPokemonHealth + " health remaining!");
+playerTurn = false;
+wildPokemonFaint()
+}
+else
+{
+alert(pokemonStats[wildPokemonid].type + " fainted");
+}
+}
+//RANDOMIZE WILD POKEMON
+function randomPokemon(){
+callWildPokemonid();
+callWildPokemonHealth();
+callWildPokemonLevel();
+callMoveid();
+}
+var pokemonHealth = 50;
+//START FIGHT
+function startFight(){
+randomPokemon();
+alert("Wild " + pokemonStats[wildPokemonid].type + " appears!");
+alert("Level : " + wildPokemonLevel + " Health : " + wildPokemonHealth);
+playerTurn = false;
+attackLoop();
+}
+function attackLoop(){
+if (playerTurn === false)
+{
+playerTurn = true;
+wildPokemonAttack();
+}
+else
+{
+playerTurn = false;
+selectMove();
+}
+}
+function wildPokemonFaint(){
+if (wildPokemonHealth < 1){
+alert(pokemonStats[wildPokemonid].type + " has fainted");}
+else
+{   attackLoop();}
+}
+startFight();
 
-        <script>
-            var canvas, context;
-            var scene, player1, player2;
-            const BLOCK_WIDTH = BLOCK_HEIGHT = 10;
-            var stopDraw;
-            setup();
-
-            function setup(){
-                //the cavas is the drawing space
-                canvas = document.getElementById("canvas");
-                context = canvas.getContext("2d");
-                canvas.style.width ='100%';
-                canvas.width = window.innerWidth;
-                canvas.style.height ='100%';
-                canvas.height = window.innerHeight;
-
-                context.fillStyle = "black";
-
-                scene = [];
-
-                player1 = new Player(100,100,'W','S','A','D');
-                player1.grow();
-                player2 = new Player(300,100,'I','K','J','L');
-                player2.grow();
-
-                //walls
-                var minX = 10;
-                var maxX = canvas.width - canvas.width%10 - 10;
-                var minY = 10;
-                var maxY = canvas.height - canvas.height%10 - 10;
-                for(var x=minX; x<=maxX; x+=10){addBlock(x,minY);addBlock(x,maxY);}
-                for(var y=minY; y<=maxY; y+=10){addBlock(minX,y);addBlock(maxX,y);}
-
-                window.addEventListener('keydown',keyPress,false);
-
-                stopDraw = setInterval(draw,1000);
-            }
-
-            function keyPress(e) {
-                e.preventDefault();
-                var key = String.fromCharCode(e.which);
-                player1.keyPress(key);
-                player2.keyPress(key);
-            }
-
-            function addBlock(x,y){
-                scene.push({x:x,y:y})
-            }
-
-            function draw(){
-                player1.grow()
-                if(!player1.alive) {
-                    displayWinnerName("Dave")
-                    clearInterval(stopDraw);
-                    return;
-                }
-                player2.grow()
-                if(!player2.alive) {
-                    displayWinnerName("Bob")
-                    clearInterval(stopDraw);
-                    return;
-                }
-                for(var i=0; i<scene.length; i++){
-                    var block = scene[i];
-                    context.fillRect(block.x, block.y, BLOCK_WIDTH, BLOCK_HEIGHT);
-                }
-            }
-
-            function displayWinnerName(name){
-                context.font = "30px Poppins";
-                context.fillStyle = "red";
-                context.textAlign = "center";
-                context.fillText("Winner is "+name, canvas.width/2, canvas.height/2);
-            }
-
-            function Player(startX,startY,upKey, downKey,leftKey,rightKey){
-                this.alive = true;
-                this.x = startX;
-                this.y = startY;
-                this.up = upKey;
-                this.down = downKey;
-                this.left = leftKey;
-                this.right = rightKey;
-                this.direction = this.down;
-
-                this.keyPress = function(key){
-                    if(key == this.up) this.direction = this.up;
-                    else if(key == this.down) this.direction = this.down;
-                    else if(key == this.left) this.direction = this.left;
-                    else if(key == this.right) this.direction = this.right;
-                }
-
-                this.grow = function(){
-                    if(this.direction == this.up) this.y -= BLOCK_HEIGHT;
-                    else if(this.direction == this.down) this.y += BLOCK_HEIGHT;
-                    else if(this.direction == this.left) this.x -= BLOCK_WIDTH;
-                    else if(this.direction == this.right) this.x += BLOCK_WIDTH;
-                    for(var i=0; i<scene.length; i++){
-                        var block = scene[i];
-                        if(block.x==this.x && block.y==this.y)
-                            this.alive = false;
-                    }
-                    addBlock(this.x,this.y);
-                }
-            }
-
-    </script>
-  </body>
-</html>
